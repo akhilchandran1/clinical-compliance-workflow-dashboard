@@ -79,6 +79,7 @@ function reject() {
   const response = documentStore.rejectDocument(targetId.value, rejectComment.value, roleStore.selectedRole, `Demo ${roleStore.selectedRole}`)
   if (!response.ok) {
     rejectError.value = response.error
+    showToast({ type: 'error', title: 'Rejection blocked', message: response.error })
     return
   }
   rejectOpen.value = false

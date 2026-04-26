@@ -190,15 +190,30 @@ export const useDocumentStore = defineStore('documentStore', {
         return { ok: false, error: 'Invalid workflow transition for approval' }
       }
 
-      const startStatus = current.status === 'Submitted' ? 'Under Review' : current.status
-      if (startStatus !== current.status) {
-        this.documents[index] = {
+      let reviewStateDocument = current
+      if (current.status === 'Submitted') {
+        const reviewStartTime = new Date().toISOString()
+        reviewStateDocument = {
           ...current,
           status: 'Under Review',
+          updatedAt: reviewStartTime,
+          lastUpdated: reviewStartTime,
         }
+        this.documents[index] = reviewStateDocument
+        useAuditStore().addLog({
+          user: actor,
+          role: actorRole,
+          action: 'Moved Document to Under Review',
+          entityType: 'Document',
+          entityId: reviewStateDocument.id,
+          entityName: reviewStateDocument.name,
+          previousStatus: 'Submitted',
+          newStatus: 'Under Review',
+          comment: 'Review started during approval action',
+        })
       }
 
-      if (!assertValidTransition('Under Review', 'Approved')) {
+      if (!assertValidTransition(reviewStateDocument.status, 'Approved')) {
         return { ok: false, error: 'Invalid workflow transition for approval' }
       }
 
@@ -221,7 +236,7 @@ export const useDocumentStore = defineStore('documentStore', {
         entityType: 'Document',
         entityId: updated.id,
         entityName: updated.name,
-        previousStatus: current.status,
+        previousStatus: reviewStateDocument.status,
         newStatus: 'Approved',
         comment,
       })
@@ -240,8 +255,30 @@ export const useDocumentStore = defineStore('documentStore', {
         return { ok: false, error: 'Invalid workflow transition for rejection' }
       }
 
-      const currentStatus = current.status === 'Submitted' ? 'Under Review' : current.status
-      if (!assertValidTransition(currentStatus, 'Rejected')) {
+      let reviewStateDocument = current
+      if (current.status === 'Submitted') {
+        const reviewStartTime = new Date().toISOString()
+        reviewStateDocument = {
+          ...current,
+          status: 'Under Review',
+          updatedAt: reviewStartTime,
+          lastUpdated: reviewStartTime,
+        }
+        this.documents[index] = reviewStateDocument
+        useAuditStore().addLog({
+          user: actor,
+          role: actorRole,
+          action: 'Moved Document to Under Review',
+          entityType: 'Document',
+          entityId: reviewStateDocument.id,
+          entityName: reviewStateDocument.name,
+          previousStatus: 'Submitted',
+          newStatus: 'Under Review',
+          comment: 'Review started during rejection action',
+        })
+      }
+
+      if (!assertValidTransition(reviewStateDocument.status, 'Rejected')) {
         return { ok: false, error: 'Invalid workflow transition for rejection' }
       }
 
@@ -264,7 +301,7 @@ export const useDocumentStore = defineStore('documentStore', {
         entityType: 'Document',
         entityId: updated.id,
         entityName: updated.name,
-        previousStatus: current.status,
+        previousStatus: reviewStateDocument.status,
         newStatus: 'Rejected',
         comment: comment.trim(),
       })
