@@ -1,0 +1,47 @@
+﻿const now = new Date()
+const iso = (daysOffset = 0) => new Date(now.getTime() + daysOffset * 24 * 60 * 60 * 1000).toISOString()
+
+export const seedStudies = [
+  {
+    id: 'ST-0001',
+    title: 'Cardiac Safety Study',
+    sponsor: 'MedTrial Pharma',
+    phase: 'Phase II',
+    status: 'Active',
+    riskLevel: 'Medium',
+    principalInvestigator: 'Dr. Sarah Collins',
+    site: 'Dublin Clinical Research Centre',
+    startDate: '2026-03-01',
+    expectedEndDate: '2026-09-30',
+    createdAt: iso(-45),
+    updatedAt: iso(-2),
+  },
+  {
+    id: 'ST-0002',
+    title: 'Neurocognitive Device Validation',
+    sponsor: 'NovaSyn Labs',
+    phase: 'Phase III',
+    status: 'Under Review',
+    riskLevel: 'High',
+    principalInvestigator: 'Dr. Aidan Murphy',
+    site: 'Galway Clinical Innovation Unit',
+    startDate: '2026-02-15',
+    expectedEndDate: '2026-11-20',
+    createdAt: iso(-60),
+    updatedAt: iso(-3),
+  },
+  {
+    id: 'ST-0003',
+    title: 'Respiratory Monitoring Pilot',
+    sponsor: 'BlueQuanta Biotech',
+    phase: 'Phase I',
+    status: 'Submitted',
+    riskLevel: 'Low',
+    principalInvestigator: 'Dr. Emily Walsh',
+    site: 'Cork Trial Operations Centre',
+    startDate: '2026-04-08',
+    expectedEndDate: '2026-12-12',
+    createdAt: iso(-20),
+    updatedAt: iso(-6),
+  },
+]

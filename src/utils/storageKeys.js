@@ -1,0 +1,6 @@
+﻿export const storageKeys = {
+  studies: 'CLINICAL_DASHBOARD_STUDIES',
+  documents: 'CLINICAL_DASHBOARD_DOCUMENTS',
+  auditLogs: 'CLINICAL_DASHBOARD_AUDIT_LOGS',
+  role: 'CLINICAL_DASHBOARD_ROLE',
+}
