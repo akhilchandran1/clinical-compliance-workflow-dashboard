@@ -75,13 +75,15 @@ export const useAlertStore = defineStore('alertStore', {
           })
         })
 
-      this.alerts = newAlerts.map((alert, index) => ({
-        id: generateNextId('ALT', newAlerts.slice(0, index).map((item, offset) => ({ id: `ALT-${String(offset + 1).padStart(4, '0')}` }))),
+      return newAlerts.map((alert, index) => ({
+        id: generateNextId('ALT', newAlerts.slice(0, index).map((_, offset) => ({ id: `ALT-${String(offset + 1).padStart(4, '0')}` }))),
         ...alert,
         createdAt: toIsoDate(),
         resolved: false,
       }))
-
+    },
+    refreshAlerts(studies = [], documents = []) {
+      this.alerts = this.generateAlerts(studies, documents)
       return this.alerts
     },
   },
