@@ -11,7 +11,7 @@
     </div>
     <div class="flex justify-end gap-2">
       <AppButton label="Cancel" variant="secondary" @click="$emit('cancel')" />
-      <AppButton type="submit" label="Create Document" />
+      <AppButton type="submit" :label="submitLabel" />
     </div>
   </form>
 </template>
@@ -26,6 +26,7 @@ defineProps({
   errors: { type: Object, default: () => ({}) },
   typeOptions: { type: Array, default: () => [] },
   studyOptions: { type: Array, default: () => [] },
+  submitLabel: { type: String, default: 'Save Document' },
 })
 
 defineEmits(['submit', 'update', 'cancel'])

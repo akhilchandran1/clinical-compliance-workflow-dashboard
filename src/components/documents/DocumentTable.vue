@@ -20,6 +20,7 @@
           <td class="px-4 py-3">{{ document.dueDate }}</td>
           <td class="px-4 py-3">
             <div class="flex flex-wrap gap-2">
+              <AppButton label="Edit" variant="secondary" :disabled="!canEdit(document)" @click="$emit('edit', document)" />
               <AppButton label="Submit" variant="secondary" :disabled="!canSubmit(document)" @click="$emit('submit', document.id)" />
               <AppButton label="Review" variant="secondary" :disabled="!canReview(document)" @click="$emit('under-review', document.id)" />
               <AppButton label="Approve" :disabled="!canApprove(document)" @click="$emit('approve', document.id)" />
@@ -35,7 +36,7 @@
 <script setup>
 import AppButton from '../common/AppButton.vue'
 import StatusBadge from '../common/StatusBadge.vue'
-import { canApproveDocument, canMarkUnderReview, canRejectDocument, canSubmitDocument } from '../../utils/workflowRules'
+import { canApproveDocument, canEditDocument, canMarkUnderReview, canRejectDocument, canSubmitDocument } from '../../utils/workflowRules'
 
 const props = defineProps({
   documents: { type: Array, default: () => [] },
@@ -43,9 +44,10 @@ const props = defineProps({
   role: { type: String, required: true },
 })
 
-defineEmits(['submit', 'under-review', 'approve', 'open-reject'])
+defineEmits(['edit', 'submit', 'under-review', 'approve', 'open-reject'])
 
 const getStudyTitle = (studyId) => props.studies.find((study) => study.id === studyId)?.title || 'Unknown study'
+const canEdit = (document) => canEditDocument(props.role, document.status)
 const canSubmit = (document) => canSubmitDocument(props.role, document.status)
 const canReview = (document) => canMarkUnderReview(props.role, document.status)
 const canApprove = (document) => canApproveDocument(props.role, document.status)

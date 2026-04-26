@@ -2,7 +2,7 @@
   <AppLayout>
     <PageHeader title="Documents" subtitle="Manage document lifecycle, submissions, and review outcomes">
       <template #actions>
-        <AppButton label="Create Document" :disabled="!canCreate" aria-label="Create document" @click="openCreate = true" />
+        <AppButton label="Create Document" :disabled="!canCreate" aria-label="Create document" @click="openCreateForm" />
       </template>
     </PageHeader>
 
@@ -22,6 +22,7 @@
         :documents="filteredDocuments"
         :studies="studyStore.studies"
         :role="roleStore.selectedRole"
+        @edit="openEditForm"
         @submit="submit"
         @under-review="markUnderReview"
         @approve="approve"
@@ -30,15 +31,16 @@
     </div>
     <EmptyState v-else title="No documents matched" description="Adjust filters to locate documents." />
 
-    <AppModal :open="openCreate" title="Create New Document" @close="closeCreate">
+    <AppModal :open="formModalOpen" :title="isEditing ? 'Edit Document' : 'Create New Document'" @close="closeForm">
       <DocumentForm
         :form="form"
         :errors="formErrors"
         :type-options="documentTypes"
         :study-options="studyOptions"
+        :submit-label="isEditing ? 'Save Changes' : 'Create Document'"
         @update="updateForm"
-        @submit="createDocument"
-        @cancel="closeCreate"
+        @submit="submitForm"
+        @cancel="closeForm"
       />
     </AppModal>
 
@@ -71,14 +73,15 @@ import { useRoleStore } from '../stores/roleStore'
 import { useStudyStore } from '../stores/studyStore'
 import { useDocumentStore } from '../stores/documentStore'
 import { useToast } from '../composables/useToast'
-import { canCreateDocument } from '../utils/workflowRules'
+import { canCreateDocument, canEditDocument } from '../utils/workflowRules'
 
 const roleStore = useRoleStore()
 const studyStore = useStudyStore()
 const documentStore = useDocumentStore()
 const { showToast } = useToast()
 
-const openCreate = ref(false)
+const formModalOpen = ref(false)
+const editingDocumentId = ref('')
 const rejectDialogOpen = ref(false)
 const rejectComment = ref('')
 const rejectError = ref('')
@@ -96,6 +99,7 @@ const formErrors = reactive({})
 const filters = reactive({ search: '', status: '', type: '', studyId: '' })
 
 const canCreate = computed(() => canCreateDocument(roleStore.selectedRole))
+const isEditing = computed(() => Boolean(editingDocumentId.value))
 const studyOptions = computed(() => studyStore.studies.map((study) => ({ label: study.title, value: study.id })))
 
 const filteredDocuments = computed(() => {
@@ -127,27 +131,73 @@ function updateForm({ key, value }) {
   form[key] = value
 }
 
-function closeCreate() {
-  openCreate.value = false
-}
-
-function createDocument() {
-  const response = documentStore.createDocument(form, roleStore.selectedRole, `Demo ${roleStore.selectedRole}`)
-  Object.keys(formErrors).forEach((key) => delete formErrors[key])
-
-  if (!response.ok) {
-    if (response.fieldErrors) Object.assign(formErrors, response.fieldErrors)
-    showToast({ type: 'error', title: 'Unable to create document', message: response.error })
-    return
-  }
-
+function resetForm() {
   form.name = ''
   form.type = ''
   form.studyId = ''
   form.version = ''
   form.dueDate = ''
-  openCreate.value = false
-  showToast({ type: 'success', title: 'Document created', message: `${response.document.id} added as draft.` })
+  editingDocumentId.value = ''
+  Object.keys(formErrors).forEach((key) => delete formErrors[key])
+}
+
+function openCreateForm() {
+  if (!canCreate.value) return
+  resetForm()
+  formModalOpen.value = true
+}
+
+function openEditForm(document) {
+  if (!canEditDocument(roleStore.selectedRole, document.status)) {
+    showToast({ type: 'error', title: 'Edit blocked', message: 'Only Draft or Rejected documents can be edited by this role.' })
+    return
+  }
+  editingDocumentId.value = document.id
+  form.name = document.name
+  form.type = document.type
+  form.studyId = document.studyId
+  form.version = document.version
+  form.dueDate = document.dueDate
+  Object.keys(formErrors).forEach((key) => delete formErrors[key])
+  formModalOpen.value = true
+}
+
+function closeForm() {
+  formModalOpen.value = false
+  resetForm()
+}
+
+function submitForm() {
+  Object.keys(formErrors).forEach((key) => delete formErrors[key])
+  const actor = `Demo ${roleStore.selectedRole}`
+  const payload = {
+    name: form.name,
+    type: form.type,
+    studyId: form.studyId,
+    version: form.version,
+    dueDate: form.dueDate,
+  }
+  const response = isEditing.value
+    ? documentStore.editDocument(editingDocumentId.value, payload, roleStore.selectedRole, actor)
+    : documentStore.createDocument(payload, roleStore.selectedRole, actor)
+
+  if (!response.ok) {
+    if (response.fieldErrors) Object.assign(formErrors, response.fieldErrors)
+    showToast({
+      type: 'error',
+      title: isEditing.value ? 'Unable to save document' : 'Unable to create document',
+      message: response.error,
+    })
+    return
+  }
+
+  const isUpdate = isEditing.value
+  closeForm()
+  showToast({
+    type: 'success',
+    title: isUpdate ? 'Document updated' : 'Document created',
+    message: isUpdate ? `${response.document.id} changes saved.` : `${response.document.id} added as draft.`,
+  })
 }
 
 function submit(documentId) {
