@@ -1,24 +1,24 @@
-﻿<template>
-  <div class="overflow-x-auto rounded-xl border border-slate-200 bg-white">
-    <table class="min-w-full text-sm">
-      <thead class="bg-slate-50">
+<template>
+  <div class="table-wrap">
+    <table class="table-base min-w-[1080px]">
+      <thead class="table-head">
         <tr>
-          <th class="px-4 py-3 text-left">Document</th>
-          <th class="px-4 py-3 text-left">Type</th>
-          <th class="px-4 py-3 text-left">Study</th>
-          <th class="px-4 py-3 text-left">Status</th>
-          <th class="px-4 py-3 text-left">Due</th>
-          <th class="px-4 py-3 text-left">Actions</th>
+          <th class="table-th">Document</th>
+          <th class="table-th">Type</th>
+          <th class="table-th">Study</th>
+          <th class="table-th">Status</th>
+          <th class="table-th">Due</th>
+          <th class="table-th">Actions</th>
         </tr>
       </thead>
       <tbody>
-        <tr v-for="document in documents" :key="document.id" class="border-t border-slate-100">
-          <td class="px-4 py-3">{{ document.name }}</td>
-          <td class="px-4 py-3">{{ document.type }}</td>
-          <td class="px-4 py-3">{{ getStudyTitle(document.studyId) }}</td>
-          <td class="px-4 py-3"><StatusBadge :value="document.status" /></td>
-          <td class="px-4 py-3">{{ document.dueDate }}</td>
-          <td class="px-4 py-3">
+        <tr v-for="document in documents" :key="document.id" class="border-t border-slate-100 odd:bg-white even:bg-slate-50/40 hover:bg-slate-50">
+          <td class="table-td font-medium">{{ document.name }}</td>
+          <td class="table-td">{{ document.type }}</td>
+          <td class="table-td">{{ getStudyTitle(document.studyId) }}</td>
+          <td class="table-td"><StatusBadge :value="document.status" /></td>
+          <td class="table-td whitespace-nowrap">{{ document.dueDate }}</td>
+          <td class="table-td">
             <div class="flex flex-wrap gap-2">
               <AppButton label="Edit" variant="secondary" :disabled="!canEdit(document)" @click="$emit('edit', document)" />
               <AppButton label="Submit" variant="secondary" :disabled="!canSubmit(document)" @click="$emit('submit', document.id)" />

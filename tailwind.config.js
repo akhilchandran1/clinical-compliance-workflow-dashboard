@@ -4,10 +4,10 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['Source Sans 3', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+        sans: ['Inter', 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', 'sans-serif'],
       },
       boxShadow: {
-        card: '0 10px 30px -18px rgba(15, 23, 42, 0.35)',
+        card: '0 1px 3px rgba(15, 23, 42, 0.08)',
       },
     },
   },

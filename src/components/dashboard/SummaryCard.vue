@@ -1,7 +1,7 @@
-﻿<template>
+<template>
   <AppCard compact>
-    <p class="text-sm text-slate-500">{{ label }}</p>
-    <p class="mt-1 text-2xl font-semibold text-slate-900">{{ value }}</p>
+    <p class="text-[13px] font-medium text-slate-500">{{ label }}</p>
+    <p class="mt-2 text-3xl font-bold tracking-tight text-slate-900">{{ value }}</p>
   </AppCard>
 </template>
 

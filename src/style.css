@@ -1,14 +1,25 @@
-﻿@import url('https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;500;600;700&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
   color-scheme: light;
+  --color-bg: #f8fafc;
+  --color-surface: #ffffff;
+  --color-text-primary: #0f172a;
+  --color-text-secondary: #475569;
+  --color-border: #e2e8f0;
+  --color-primary: #2563eb;
+  --color-success: #16a34a;
+  --color-warning: #f59e0b;
+  --color-danger: #dc2626;
+  --color-info: #0ea5e9;
 }
 
 body {
-  @apply m-0 bg-slate-100 text-slate-900 font-sans;
+  @apply m-0 bg-slate-50 text-slate-900 antialiased font-sans;
+  color: var(--color-text-primary);
+  line-height: 1.5;
 }
 
 #app {
@@ -17,4 +28,41 @@ body {
 
 .focus-ring {
   @apply focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  line-height: 1.2;
+}
+
+@layer components {
+  .surface-card {
+    @apply rounded-xl border border-slate-200 bg-white shadow-card;
+  }
+
+  .page-container {
+    @apply mx-auto w-full max-w-[1400px];
+  }
+
+  .table-wrap {
+    @apply overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-card;
+  }
+
+  .table-base {
+    @apply min-w-full text-[14px];
+  }
+
+  .table-head {
+    @apply sticky top-0 z-10 bg-slate-50/95 backdrop-blur;
+  }
+
+  .table-th {
+    @apply px-4 py-3 text-left text-[13px] font-semibold text-slate-700;
+  }
+
+  .table-td {
+    @apply px-4 py-3 align-top text-slate-800;
+  }
 }

@@ -1,8 +1,12 @@
-﻿<template>
+<template>
   <AppCard>
-    <h3 class="mb-3 text-base font-semibold text-slate-900">{{ title }}</h3>
-    <div v-if="!hasData" class="rounded-md bg-slate-50 p-5 text-sm text-slate-600">No chart data available.</div>
-    <component v-else :is="chartType" :data="data" :options="options" class="h-72" />
+    <div class="mb-4 flex items-start justify-between gap-3">
+      <h3 class="text-base font-semibold text-slate-900">{{ title }}</h3>
+    </div>
+    <div v-if="!hasData" class="rounded-lg border border-dashed border-slate-300 bg-slate-50 p-5 text-sm text-slate-600">No chart data available.</div>
+    <div v-else class="relative h-[260px] w-full md:h-[300px] lg:h-[320px]">
+      <component :is="chartType" :data="data" :options="chartOptions" class="h-full w-full" />
+    </div>
   </AppCard>
 </template>
 
@@ -29,7 +33,7 @@ const props = defineProps({
   title: { type: String, required: true },
   type: { type: String, default: 'bar' },
   data: { type: Object, default: () => ({ labels: [], datasets: [] }) },
-  options: { type: Object, default: () => ({ responsive: true, maintainAspectRatio: false }) },
+  options: { type: Object, default: () => ({}) },
 })
 
 const chartType = computed(() => {
@@ -37,6 +41,47 @@ const chartType = computed(() => {
   if (props.type === 'doughnut') return Doughnut
   return Bar
 })
+
+const chartOptions = computed(() => ({
+  ...props.options,
+  responsive: true,
+  maintainAspectRatio: false,
+  resizeDelay: 150,
+  plugins: {
+    legend: {
+      position: 'top',
+      labels: {
+        boxWidth: 12,
+        boxHeight: 12,
+        usePointStyle: true,
+        pointStyle: 'circle',
+      },
+    },
+    tooltip: {
+      mode: 'index',
+      intersect: false,
+    },
+    ...(props.options?.plugins || {}),
+  },
+  scales: {
+    x: {
+      ticks: {
+        maxRotation: 0,
+        minRotation: 0,
+        autoSkip: true,
+      },
+      ...(props.options?.scales?.x || {}),
+    },
+    y: {
+      beginAtZero: true,
+      ticks: {
+        precision: 0,
+      },
+      ...(props.options?.scales?.y || {}),
+    },
+    ...(props.options?.scales || {}),
+  },
+}))
 
 const hasData = computed(() => (props.data?.datasets || []).some((set) => (set.data || []).some((value) => Number(value) > 0)))
 </script>

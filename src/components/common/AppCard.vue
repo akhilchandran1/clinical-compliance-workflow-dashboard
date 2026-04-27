@@ -1,5 +1,5 @@
-﻿<template>
-  <section class="rounded-xl border border-slate-200 bg-white p-4 shadow-card" :class="paddingClass">
+<template>
+  <section class="surface-card p-5 sm:p-6" :class="paddingClass">
     <slot />
   </section>
 </template>
@@ -11,5 +11,5 @@ const props = defineProps({
   compact: { type: Boolean, default: false },
 })
 
-const paddingClass = computed(() => (props.compact ? 'p-3' : 'p-5'))
+const paddingClass = computed(() => (props.compact ? 'p-4 sm:p-5' : ''))
 </script>

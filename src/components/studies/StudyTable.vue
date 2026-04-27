@@ -1,22 +1,22 @@
-﻿<template>
-  <div class="overflow-x-auto rounded-xl border border-slate-200 bg-white">
-    <table class="min-w-full divide-y divide-slate-200 text-sm">
-      <thead class="bg-slate-50">
+<template>
+  <div class="table-wrap">
+    <table class="table-base min-w-[820px]">
+      <thead class="table-head">
         <tr>
-          <th class="px-4 py-3 text-left font-semibold">Study</th>
-          <th class="px-4 py-3 text-left font-semibold">Sponsor</th>
-          <th class="px-4 py-3 text-left font-semibold">Status</th>
-          <th class="px-4 py-3 text-left font-semibold">Risk</th>
-          <th class="px-4 py-3 text-left font-semibold">Site</th>
+          <th class="table-th">Study</th>
+          <th class="table-th">Sponsor</th>
+          <th class="table-th">Status</th>
+          <th class="table-th">Risk</th>
+          <th class="table-th">Site</th>
         </tr>
       </thead>
-      <tbody class="divide-y divide-slate-100">
-        <tr v-for="study in studies" :key="study.id" class="hover:bg-slate-50">
-          <td class="px-4 py-3"><RouterLink class="text-blue-700 hover:underline" :to="`/studies/${study.id}`">{{ study.title }}</RouterLink></td>
-          <td class="px-4 py-3">{{ study.sponsor }}</td>
-          <td class="px-4 py-3"><StatusBadge :value="study.status" /></td>
-          <td class="px-4 py-3"><StatusBadge :value="study.riskLevel" /></td>
-          <td class="px-4 py-3">{{ study.site }}</td>
+      <tbody>
+        <tr v-for="study in studies" :key="study.id" class="border-t border-slate-100 odd:bg-white even:bg-slate-50/40 hover:bg-slate-50">
+          <td class="table-td font-medium"><RouterLink class="text-blue-700 hover:text-blue-800 hover:underline" :to="`/studies/${study.id}`">{{ study.title }}</RouterLink></td>
+          <td class="table-td">{{ study.sponsor }}</td>
+          <td class="table-td"><StatusBadge :value="study.status" /></td>
+          <td class="table-td"><StatusBadge :value="study.riskLevel" /></td>
+          <td class="table-td">{{ study.site }}</td>
         </tr>
       </tbody>
     </table>

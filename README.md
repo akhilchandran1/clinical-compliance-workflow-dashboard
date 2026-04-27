@@ -1,24 +1,30 @@
-﻿# Clinical Compliance Workflow Dashboard
+# Clinical Compliance Workflow Dashboard
 
-## Project Overview
-Clinical Compliance Workflow Dashboard is a frontend-only Vue 3 simulation of an internal compliance system used in clinical research operations. It demonstrates role-based workflows for document creation, review, approvals, audit logging, and compliance monitoring.
+## Live Demo
+- Vercel: _Add your deployed URL here_
+- Netlify: _Add your deployed URL here_
 
-## Why This Was Built
-This project was built as a portfolio-grade example of enterprise frontend engineering with a QA mindset, focusing on reliable workflow rules, data integrity, and production deployment readiness.
+## Project Purpose
+Clinical Compliance Workflow Dashboard is a frontend-only Vue 3 simulation of a clinical research compliance system. It demonstrates realistic workflow controls, role-based document actions, auditability, and compliance monitoring in a portfolio-ready enterprise UI.
+
+## UI/UX Improvements
+- Fixed chart container sizing to prevent excessive scrolling and overflow.
+- Upgraded typography, spacing, and hierarchy for modern readability.
+- Introduced a cleaner enterprise visual system for cards, tables, badges, and buttons.
+- Improved dashboard structure with KPI cards, chart areas, recent activity, and high-risk alert summaries.
+- Strengthened responsive behavior for desktop, tablet, and mobile.
 
 ## Features
-- Role selection (Researcher, Reviewer/QA, Admin/Compliance) without real authentication
-- Dashboard KPIs and charts for workflow visibility
+- Role selection (Researcher, Reviewer/QA, Admin/Compliance) with local persistence
+- Dashboard KPIs and charts
 - Studies module with search and filtering
 - Study details with linked documents and recent audit activity
-- Documents module with create, submit, approve, reject actions
-- Review queue for pending reviewer actions
-- Compliance alerts generated from workflow/state checks
+- Documents module with create, edit, submit, approve, reject actions
+- Review queue for reviewer actions
+- Compliance alerts generated from workflow checks
 - Append-only audit trail with CSV export
-- Demo data reset for Admin users
-- localStorage persistence with corruption fallback to seed data
-- Responsive layout for desktop, tablet, mobile
-- Accessible forms, labels, keyboard-focusable controls, semantic structure
+- Admin-only demo data reset
+- localStorage persistence with corruption fallback
 
 ## Tech Stack
 - Vue 3 + Vite + JavaScript
@@ -36,7 +42,7 @@ This project was built as a portfolio-grade example of enterprise frontend engin
 - Reviewer / QA:
   - Process Submitted/Under Review documents
   - Move to Under Review
-  - Approve or reject (rejection comment required, min length validation)
+  - Approve or reject with mandatory rejection comment
 - Admin / Compliance:
   - Access all modules
   - Reset demo data
@@ -44,85 +50,50 @@ This project was built as a portfolio-grade example of enterprise frontend engin
 
 ## Compliance Concepts Demonstrated
 - Clinical workflow simulation
-- Audit trail with append-only behavior
-- Data integrity principles (timestamps, before/after status, role attribution)
-- Role-based actions and transition guards
-- Validation and error handling for invalid transitions and corrupted local storage
-- Frontend state management with isolated business logic in stores/utils
-- Responsive enterprise-style UI with UX fallback states
-- QA/testing mindset via deterministic workflow rules and safe fallback handling
+- Append-only audit trail
+- Data integrity principles (timestamps, status transitions, role attribution)
+- Role-based access rules
+- Validation and defensive error handling
+- QA-oriented frontend architecture
 
 ## Mock Data Disclaimer
 This application uses fictional studies, fictional users, and mock records only.
 No real patient data, clinical data, or confidential data is included.
 
-## Local Development
+## Run Locally
 1. `npm install`
 2. `npm run dev`
 3. Open the local URL printed by Vite.
 
-## Production Build
+## Build for Production
 1. `npm run build`
-2. Output is generated in `dist/`.
-3. Optional local preview: `npm run preview`
+2. Output is generated in `dist/`
+3. Optional preview: `npm run preview`
 
-## Git Setup Commands
-```bash
-git init
-git add .
-git commit -m "initial commit"
-git branch -M main
-git remote add origin <repo-url>
-git push -u origin main
-```
-
-## Example Logical Commit Messages
-- `chore: scaffold vue3 vite tailwind app shell`
-- `feat: add stores workflow rules and localStorage persistence`
-- `feat: implement studies documents review queue and audit pages`
-- `feat: add compliance alerts charts and role-based actions`
-- `chore: add deployment config for vercel and netlify`
-- `docs: add portfolio and deployment documentation`
-
-## Deploy to Vercel (SPA Routing Ready)
+## Deployment (Vercel)
 1. Push repository to GitHub.
-2. In Vercel, click **Add New Project** and import the repo.
-3. Build settings:
-   - Framework preset: `Vite`
+2. Import repository in Vercel.
+3. Configure:
    - Build command: `npm run build`
    - Output directory: `dist`
-4. Confirm `vercel.json` exists at project root:
-   ```json
-   {
-     "rewrites": [
-       { "source": "/(.*)", "destination": "/index.html" }
-     ]
-   }
-   ```
-5. Deploy.
-6. After deployment, verify deep-link refresh on routes like `/documents` and `/audit-trail`.
+4. Deploy.
+5. Verify deep-link refresh on routes like `/documents`, `/audit-trail`, `/compliance-alerts`.
 
-## Deploy to Netlify (SPA Routing Ready)
+## Deployment (Netlify)
 1. Push repository to GitHub.
-2. In Netlify, click **Add new site** > **Import an existing project**.
+2. Import repository in Netlify.
 3. Configure:
    - Build command: `npm run build`
    - Publish directory: `dist`
-4. Ensure file `public/_redirects` exists with:
-   ```text
-   /* /index.html 200
-   ```
-5. Deploy and verify route refresh behavior on non-root routes.
+4. Deploy and verify deep-link refresh on non-root routes.
 
-## Auto Deployment / Continuous Deployability
-- Both Vercel and Netlify can be connected directly to GitHub.
-- Every push to the tracked branch (typically `main`) triggers automatic redeployment.
-- This keeps the app continuously deployable and always shareable via a public URL.
+## SPA Routing Note
+This project includes SPA fallback routing configuration:
+- `vercel.json` rewrites all routes to `index.html`
+- `public/_redirects` includes `/* /index.html 200`
 
-## Screenshots
-- `docs/screenshots/dashboard.png` (placeholder)
-- `docs/screenshots/documents.png` (placeholder)
-- `docs/screenshots/audit-trail.png` (placeholder)
+## Continuous Deployment
+When connected to GitHub, Vercel and Netlify automatically redeploy on each push to the tracked branch.
 
 ## Portfolio Explanation
-This project demonstrates production frontend thinking for regulated workflow simulation: structured state management, explicit transition rules, auditability, defensive error handling, and deployable SPA architecture suitable for portfolio review by engineering teams.
+This project demonstrates production frontend engineering for regulated workflow simulation: role-driven state transitions, auditability, robust fallback behavior, responsive UI design, and deployment readiness.
