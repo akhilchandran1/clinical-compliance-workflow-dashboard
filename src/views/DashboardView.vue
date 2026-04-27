@@ -1,4 +1,4 @@
-<template>
+ï»¿<template>
   <AppLayout>
     <PageHeader title="Dashboard" subtitle="Clinical compliance overview and KPI monitoring">
       <template #actions>
@@ -21,12 +21,20 @@
     </section>
 
     <section class="mt-6 grid gap-4 xl:grid-cols-3">
-      <ChartCard class="xl:col-span-2" title="Documents by Status" type="bar" :data="documentsByStatusData" :options="barChartOptions" filter-label="All Studies" :footer-text="`Total documents: ${metrics.totalDocuments}`" />
+      <ChartCard
+        class="xl:col-span-2"
+        title="Documents by Status"
+        type="bar"
+        :data="documentsByStatusData"
+        :options="barChartOptions"
+        filter-label="All Studies"
+        :footer-text="`Total documents: ${metrics.totalDocuments}`"
+      />
       <ComplianceSummary :metrics="metrics" />
     </section>
 
     <section class="mt-6 grid gap-4 xl:grid-cols-2">
-      <ChartCard title="Studies by Risk Level" type="doughnut" :data="riskChartData" :options="doughnutChartOptions" />
+      <ChartCard title="Studies by Risk Level" type="doughnut" :data="riskChartData" :options="doughnutChartOptions" :footer-text="riskLegendSummary" />
       <ChartCard title="Monthly Review Activity" type="line" :data="reviewActivityData" :options="lineChartOptions" />
     </section>
 
@@ -37,12 +45,7 @@
           <RouterLink to="/audit-trail" class="text-sm font-medium text-blue-700 hover:underline">View all</RouterLink>
         </div>
         <EmptyState v-if="recentLogs.length === 0" title="No recent activity" description="Workflow actions will appear here as users submit and review documents." />
-        <ul v-else class="space-y-3">
-          <li v-for="log in recentLogs" :key="log.id" class="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3">
-            <p class="text-sm font-semibold text-slate-900">{{ log.action }}</p>
-            <p class="mt-1 text-xs text-slate-600">{{ formatDateTime(log.timestamp) }} · {{ log.role }} · {{ log.entityId }}</p>
-          </li>
-        </ul>
+        <ActivityList v-else :items="recentLogs" />
       </AppCard>
 
       <AppCard>
@@ -51,16 +54,7 @@
           <RouterLink to="/compliance-alerts" class="text-sm font-medium text-blue-700 hover:underline">View all</RouterLink>
         </div>
         <EmptyState v-if="highRiskAlerts.length === 0" title="No high risk alerts" description="Critical compliance issues will appear here when triggered." />
-        <ul v-else class="space-y-3">
-          <li v-for="alert in highRiskAlerts" :key="alert.id" class="rounded-lg border border-red-200 bg-red-50 px-4 py-3">
-            <div class="mb-2 flex items-center justify-between gap-2">
-              <StatusBadge :value="alert.severity" />
-              <span class="text-xs text-slate-600">{{ formatDateTime(alert.createdAt) }}</span>
-            </div>
-            <p class="text-sm font-semibold text-slate-900">{{ alert.type }}</p>
-            <p class="mt-1 text-sm text-slate-700">{{ alert.message }}</p>
-          </li>
-        </ul>
+        <RiskAlertList v-else :items="highRiskAlerts" />
       </AppCard>
     </section>
   </AppLayout>
@@ -73,16 +67,16 @@ import { Calendar } from 'lucide-vue-next'
 import AppLayout from '../components/layout/AppLayout.vue'
 import AppCard from '../components/common/AppCard.vue'
 import EmptyState from '../components/common/EmptyState.vue'
-import StatusBadge from '../components/common/StatusBadge.vue'
 import PageHeader from '../components/common/PageHeader.vue'
 import MetricCard from '../components/dashboard/MetricCard.vue'
 import ChartCard from '../components/dashboard/ChartCard.vue'
 import ComplianceSummary from '../components/dashboard/ComplianceSummary.vue'
+import ActivityList from '../components/dashboard/ActivityList.vue'
+import RiskAlertList from '../components/dashboard/RiskAlertList.vue'
 import { useStudyStore } from '../stores/studyStore'
 import { useDocumentStore } from '../stores/documentStore'
 import { useAlertStore } from '../stores/alertStore'
 import { useAuditStore } from '../stores/auditStore'
-import { formatDateTime } from '../utils/dateUtils'
 import { documentStatuses } from '../constants/statuses'
 
 const studyStore = useStudyStore()
@@ -94,6 +88,17 @@ const alerts = computed(() => alertStore.generateAlerts(studyStore.studies, docu
 const highRiskAlerts = computed(() => alerts.value.filter((alert) => alert.severity === 'High').slice(0, 4))
 const recentLogs = computed(() => auditStore.sortedLogs.slice(0, 6))
 const todayLabel = computed(() => new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }))
+
+const riskLegendSummary = computed(() => {
+  const total = studyStore.studies.length || 1
+  const levels = [
+    { label: 'Low', count: studyStore.studies.filter((study) => study.riskLevel === 'Low').length },
+    { label: 'Medium', count: studyStore.studies.filter((study) => study.riskLevel === 'Medium').length },
+    { label: 'High', count: studyStore.studies.filter((study) => study.riskLevel === 'High').length },
+  ]
+
+  return levels.map((item) => `${item.label}: ${Math.round((item.count / total) * 100)}%`).join(' | ')
+})
 
 const canonicalStatusMap = new Map(documentStatuses.map((status) => [status.toLowerCase(), status]))
 
