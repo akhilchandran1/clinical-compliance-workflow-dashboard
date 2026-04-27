@@ -5,6 +5,7 @@
     class="group flex w-full items-center justify-between rounded-xl border px-3 py-2.5 text-sm font-medium transition"
     :class="itemClass"
     :aria-disabled="disabled ? 'true' : null"
+    @click="emit('select')"
   >
     <span class="flex items-center gap-2.5">
       <component :is="resolvedIcon" class="h-4 w-4" />
@@ -37,6 +38,7 @@ const props = defineProps({
   badge: { type: [String, Number], default: null },
   disabled: { type: Boolean, default: false },
 })
+const emit = defineEmits(['select'])
 
 const iconMap = {
   dashboard: LayoutDashboard,

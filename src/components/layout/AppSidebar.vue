@@ -23,6 +23,7 @@
               :icon="item.icon"
               :badge="item.badge"
               :active="isActive(item.to)"
+              @select="$emit('close')"
             />
           </nav>
         </div>
