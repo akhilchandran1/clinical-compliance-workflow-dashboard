@@ -1,5 +1,5 @@
 <template>
-  <section class="surface-card p-5 sm:p-6" :class="paddingClass">
+  <section class="surface-card min-w-0 overflow-hidden p-5 sm:p-6" :class="paddingClass">
     <slot />
   </section>
 </template>

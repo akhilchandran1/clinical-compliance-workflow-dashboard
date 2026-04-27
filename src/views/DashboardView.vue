@@ -9,7 +9,7 @@
       </template>
     </PageHeader>
 
-    <section class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+    <section class="kpi-grid">
       <MetricCard label="Total Studies" :value="metrics.totalStudies" icon="studies" tone="primary" trend="0% from last month" />
       <MetricCard label="Active Studies" :value="metrics.activeStudies" icon="active" tone="success" trend="Stable portfolio" />
       <MetricCard label="Pending Reviews" :value="metrics.pendingReviews" icon="pending" tone="warning" trend="Awaiting QA actions" />
@@ -20,25 +20,27 @@
       <MetricCard label="Review In Progress" :value="metrics.reviewInProgress" icon="progress" tone="info" trend="Currently under review" />
     </section>
 
-    <section class="mt-6 grid gap-4 xl:grid-cols-3">
+    <section class="chart-grid two-column mt-6">
       <ChartCard
-        class="xl:col-span-2"
+        class="min-w-0"
         title="Documents by Status"
         type="bar"
         :data="documentsByStatusData"
         :options="barChartOptions"
         filter-label="All Studies"
         :footer-text="`Total documents: ${metrics.totalDocuments}`"
+        :mobile-height="220"
+        :desktop-height="280"
       />
       <ComplianceSummary :metrics="metrics" />
     </section>
 
-    <section class="mt-6 grid gap-4 xl:grid-cols-2">
-      <ChartCard title="Studies by Risk Level" type="doughnut" :data="riskChartData" :options="doughnutChartOptions" :footer-text="riskLegendSummary" />
-      <ChartCard title="Monthly Review Activity" type="line" :data="reviewActivityData" :options="lineChartOptions" />
+    <section class="chart-grid mt-6 lg:grid-cols-2">
+      <ChartCard title="Studies by Risk Level" type="doughnut" :data="riskChartData" :options="doughnutChartOptions" :footer-text="riskLegendSummary" :mobile-height="220" :desktop-height="260" />
+      <ChartCard title="Monthly Review Activity" type="line" :data="reviewActivityData" :options="lineChartOptions" :mobile-height="220" :desktop-height="260" />
     </section>
 
-    <section class="mt-6 grid gap-4 xl:grid-cols-2">
+    <section class="chart-grid mt-6 lg:grid-cols-2">
       <AppCard>
         <div class="mb-4 flex items-center justify-between gap-2">
           <h2 class="text-lg font-semibold text-slate-900">Recent Activity</h2>

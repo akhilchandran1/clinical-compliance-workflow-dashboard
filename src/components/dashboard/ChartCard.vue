@@ -1,6 +1,6 @@
 <template>
-  <AppCard>
-    <div class="mb-4 flex items-start justify-between gap-3">
+  <AppCard class="chart-card">
+    <div class="mb-4 flex min-w-0 items-start justify-between gap-3">
       <h3 class="text-base font-semibold text-slate-900">{{ title }}</h3>
       <button v-if="filterLabel" type="button" class="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-medium text-slate-600" aria-label="Chart filter">
         {{ filterLabel }}
@@ -9,7 +9,7 @@
     </div>
 
     <div v-if="!hasData" class="rounded-lg border border-dashed border-slate-300 bg-slate-50 p-5 text-sm text-slate-600">No chart data available.</div>
-    <div v-else class="relative h-[240px] w-full md:h-[280px]">
+    <div v-else class="chart-container relative w-full max-w-full min-w-0 overflow-hidden" :style="chartContainerStyle">
       <component :is="chartType" :data="data" :options="chartOptions" class="h-full w-full" />
     </div>
 
@@ -18,7 +18,7 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { Bar, Doughnut, Line } from 'vue-chartjs'
 import {
   Chart as ChartJS,
@@ -44,6 +44,8 @@ const props = defineProps({
   options: { type: Object, default: () => ({}) },
   filterLabel: { type: String, default: '' },
   footerText: { type: String, default: '' },
+  mobileHeight: { type: Number, default: 220 },
+  desktopHeight: { type: Number, default: 260 },
 })
 
 const chartType = computed(() => {
@@ -53,9 +55,40 @@ const chartType = computed(() => {
 })
 
 const isCircularChart = computed(() => props.type === 'doughnut')
+const isMobile = ref(false)
+
+const chartContainerStyle = computed(() => ({
+  height: `${isMobile.value ? props.mobileHeight : props.desktopHeight}px`,
+}))
+
+const abbreviatedStatusLabel = {
+  Submitted: 'Submit',
+  'Under Review': 'Review',
+  Approved: 'Approved',
+  Rejected: 'Reject',
+  Expired: 'Expired',
+  Draft: 'Draft',
+}
+
+function updateViewportFlag() {
+  isMobile.value = window.innerWidth < 640
+}
+
+onMounted(() => {
+  updateViewportFlag()
+  window.addEventListener('resize', updateViewportFlag)
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('resize', updateViewportFlag)
+})
 
 const chartOptions = computed(() => {
   const { plugins = {}, scales = {}, ...restOptions } = props.options || {}
+  const { legend: providedLegend = {}, ...otherPlugins } = plugins
+  const { x: scaleX = {}, y: scaleY = {}, ...otherScales } = scales
+  const { ticks: providedXTicks = {}, ...otherScaleX } = scaleX
+  const { ticks: providedYTicks = {}, ...otherScaleY } = scaleY
 
   const baseOptions = {
     responsive: true,
@@ -63,23 +96,25 @@ const chartOptions = computed(() => {
     resizeDelay: 150,
     plugins: {
       legend: {
-        position: 'top',
+        ...providedLegend,
+        position: isMobile.value && isCircularChart.value ? 'bottom' : (providedLegend.position || 'top'),
         labels: {
-          boxWidth: 10,
-          boxHeight: 10,
+          boxWidth: 12,
+          boxHeight: 12,
           usePointStyle: true,
           pointStyle: 'circle',
           color: '#475569',
           font: {
-            size: 12,
+            size: isMobile.value ? 10 : 12,
           },
+          ...(providedLegend.labels || {}),
         },
       },
       tooltip: {
         mode: 'index',
         intersect: false,
       },
-      ...plugins,
+      ...otherPlugins,
     },
   }
 
@@ -98,15 +133,27 @@ const chartOptions = computed(() => {
           maxRotation: 0,
           minRotation: 0,
           autoSkip: true,
+          maxTicksLimit: isMobile.value ? 4 : props.type === 'line' ? 6 : 8,
           color: '#64748b',
           font: {
-            size: 12,
+            size: isMobile.value ? 10 : 12,
           },
+          callback(value, index, ticks) {
+            if (typeof providedXTicks.callback === 'function') {
+              return providedXTicks.callback.call(this, value, index, ticks)
+            }
+            const raw = this.getLabelForValue(value)
+            if (props.type === 'bar' && isMobile.value) {
+              return abbreviatedStatusLabel[raw] || raw
+            }
+            return raw
+          },
+          ...providedXTicks,
         },
         grid: {
           display: false,
         },
-        ...(scales.x || {}),
+        ...otherScaleX,
       },
       y: {
         beginAtZero: true,
@@ -114,15 +161,16 @@ const chartOptions = computed(() => {
           precision: 0,
           color: '#64748b',
           font: {
-            size: 12,
+            size: isMobile.value ? 10 : 12,
           },
+          ...providedYTicks,
         },
         grid: {
           color: '#e2e8f0',
         },
-        ...(scales.y || {}),
+        ...otherScaleY,
       },
-      ...scales,
+      ...otherScales,
     },
     ...restOptions,
   }
