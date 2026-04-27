@@ -1,7 +1,9 @@
-﻿import { seedStudies } from '../data/seedStudies'
+import { seedStudies } from '../data/seedStudies'
 import { seedDocuments } from '../data/seedDocuments'
 import { seedAuditLogs } from '../data/seedAuditLogs'
 import { storageKeys } from '../utils/storageKeys'
+
+export const DEMO_DATA_VERSION = '2026-04-27-v2-realistic-data'
 
 const clone = (value) => JSON.parse(JSON.stringify(value))
 
@@ -42,10 +44,29 @@ export function resetDemoData() {
   saveToStorage(storageKeys.studies, studies)
   saveToStorage(storageKeys.documents, documents)
   saveToStorage(storageKeys.auditLogs, auditLogs)
+  saveToStorage(storageKeys.demoDataVersion, DEMO_DATA_VERSION)
 
   return {
     studies,
     documents,
     auditLogs,
+  }
+}
+
+export function ensureDemoDataVersion() {
+  try {
+    const storedVersion = localStorage.getItem(storageKeys.demoDataVersion)
+    if (storedVersion === DEMO_DATA_VERSION) return { migrated: false }
+
+    const seeded = resetDemoData()
+    return {
+      migrated: true,
+      ...seeded,
+    }
+  } catch (error) {
+    return {
+      migrated: false,
+      error,
+    }
   }
 }

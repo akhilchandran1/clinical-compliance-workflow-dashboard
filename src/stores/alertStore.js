@@ -25,7 +25,7 @@ export const useAlertStore = defineStore('alertStore', {
         }
 
         const daysToDue = daysBetween(new Date(), doc.dueDate)
-        if (daysToDue !== null && daysToDue >= 0 && daysToDue <= 7) {
+        if (daysToDue !== null && daysToDue >= 0 && daysToDue <= 7 && !['Approved', 'Expired'].includes(doc.status)) {
           newAlerts.push({
             severity: 'Medium',
             type: 'Expiring Document',
