@@ -1,5 +1,5 @@
-﻿import { defineStore } from 'pinia'
-import { roles } from '../constants/roles'
+import { defineStore } from 'pinia'
+import { roleLabels, roles } from '../constants/roles'
 import { storageKeys } from '../utils/storageKeys'
 import { loadOrSeed, saveToStorage } from '../composables/useLocalStorage'
 import { useAuditStore } from './auditStore'
@@ -18,21 +18,25 @@ export const useRoleStore = defineStore('roleStore', {
   actions: {
     setRole(role) {
       if (!allowedRoles.includes(role)) return false
+      if (this.selectedRole === role) return true
+
       const previousRole = this.selectedRole
       this.selectedRole = role
       saveToStorage(storageKeys.role, role)
+
+      const message = `Role changed from ${roleLabels[previousRole]} to ${roleLabels[role]}`
 
       const auditStore = useAuditStore()
       auditStore.addLog({
         user: `Demo ${role}`,
         role,
-        action: 'Changed Role',
+        action: message,
         entityType: 'User Session',
         entityId: 'ROLE-SELECTOR',
         entityName: 'Role Selector',
         previousStatus: previousRole,
         newStatus: role,
-        comment: 'Role switched from selector',
+        comment: message,
       })
 
       return true

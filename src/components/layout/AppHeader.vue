@@ -29,14 +29,18 @@
           </span>
         </button>
 
-        <div class="hidden items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs sm:flex">
-          <span class="text-slate-500">Role</span>
-          <span class="font-semibold text-slate-900">{{ roleStore.selectedRole }}</span>
-        </div>
+        <RoleSwitcher class="hidden sm:block" align="right">
+          <template #trigger="{ label }">
+            <span class="text-slate-500">Role</span>
+            <span class="font-semibold text-slate-900">{{ label }}</span>
+          </template>
+        </RoleSwitcher>
 
-        <div class="inline-flex h-9 w-9 items-center justify-center rounded-full bg-blue-100 text-xs font-semibold text-blue-700" :aria-label="`Current user role ${roleStore.selectedRole}`">
-          {{ roleInitials }}
-        </div>
+        <RoleSwitcher class="sm:hidden" align="right" trigger-class="h-9 w-9 justify-center rounded-full bg-blue-100 text-xs font-semibold text-blue-700 border-blue-100">
+          <template #trigger>
+            {{ roleInitials }}
+          </template>
+        </RoleSwitcher>
       </div>
     </div>
   </header>
@@ -45,6 +49,7 @@
 <script setup>
 import { computed } from 'vue'
 import { Bell, Menu, Search } from 'lucide-vue-next'
+import RoleSwitcher from '../common/RoleSwitcher.vue'
 import { useRoleStore } from '../../stores/roleStore'
 import { useAlertStore } from '../../stores/alertStore'
 import { useStudyStore } from '../../stores/studyStore'
