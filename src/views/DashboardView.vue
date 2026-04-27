@@ -1,4 +1,4 @@
-<template>
+ï»¿<template>
   <AppLayout>
     <PageHeader title="Dashboard" subtitle="Clinical compliance overview and KPI monitoring" />
 
@@ -32,7 +32,7 @@
         <ul v-else class="space-y-3">
           <li v-for="log in recentLogs" :key="log.id" class="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3">
             <p class="text-sm font-semibold text-slate-900">{{ log.action }}</p>
-            <p class="mt-1 text-xs text-slate-600">{{ formatDateTime(log.timestamp) }} · {{ log.role }} · {{ log.entityId }}</p>
+            <p class="mt-1 text-xs text-slate-600">{{ formatDateTime(log.timestamp) }} Â· {{ log.role }} Â· {{ log.entityId }}</p>
           </li>
         </ul>
       </AppCard>
@@ -74,6 +74,7 @@ import { useDocumentStore } from '../stores/documentStore'
 import { useAlertStore } from '../stores/alertStore'
 import { useAuditStore } from '../stores/auditStore'
 import { formatDateTime } from '../utils/dateUtils'
+import { documentStatuses } from '../constants/statuses'
 
 const studyStore = useStudyStore()
 const documentStore = useDocumentStore()
@@ -83,6 +84,22 @@ const auditStore = useAuditStore()
 const alerts = computed(() => alertStore.generateAlerts(studyStore.studies, documentStore.documents))
 const highRiskAlerts = computed(() => alerts.value.filter((alert) => alert.severity === 'High').slice(0, 4))
 const recentLogs = computed(() => auditStore.sortedLogs.slice(0, 6))
+
+const canonicalStatusMap = new Map(documentStatuses.map((status) => [status.toLowerCase(), status]))
+
+function normalizeDocumentStatus(rawStatus) {
+  const normalized = String(rawStatus || '').trim().toLowerCase()
+  return canonicalStatusMap.get(normalized) || 'Draft'
+}
+
+const documentStatusCounts = computed(() => {
+  const counts = Object.fromEntries(documentStatuses.map((status) => [status, 0]))
+  documentStore.documents.forEach((doc) => {
+    const status = normalizeDocumentStatus(doc.status)
+    counts[status] += 1
+  })
+  return counts
+})
 
 const barChartOptions = {
   plugins: {
@@ -124,25 +141,27 @@ const lineChartOptions = {
   },
 }
 
-const metrics = computed(() => {
-  const docs = documentStore.documents
-  return {
-    totalStudies: studyStore.studies.length,
-    activeStudies: studyStore.activeStudies.length,
-    pendingReviews: docs.filter((doc) => ['Submitted', 'Under Review'].includes(doc.status)).length,
-    approvedDocuments: docs.filter((doc) => doc.status === 'Approved').length,
-    rejectedDocuments: docs.filter((doc) => doc.status === 'Rejected').length,
-    highRiskAlerts: alerts.value.filter((alert) => alert.severity === 'High').length,
-    expiringSoon: alerts.value.filter((alert) => alert.type === 'Expiring Document').length,
-  }
-})
+const metrics = computed(() => ({
+  totalStudies: studyStore.studies.length,
+  activeStudies: studyStore.activeStudies.length,
+  pendingReviews: documentStatusCounts.value.Submitted + documentStatusCounts.value['Under Review'],
+  approvedDocuments: documentStatusCounts.value.Approved,
+  rejectedDocuments: documentStatusCounts.value.Rejected,
+  highRiskAlerts: alerts.value.filter((alert) => alert.severity === 'High').length,
+  expiringSoon: alerts.value.filter((alert) => alert.type === 'Expiring Document').length,
+}))
 
 const documentsByStatusData = computed(() => {
-  const statuses = ['Draft', 'Submitted', 'Under Review', 'Approved', 'Rejected', 'Expired']
-  const counts = statuses.map((status) => documentStore.documents.filter((doc) => doc.status === status).length)
+  const statuses = [...documentStatuses]
+  const counts = statuses.map((status) => documentStatusCounts.value[status])
   return {
     labels: statuses,
-    datasets: [{ label: 'Documents', data: counts, backgroundColor: '#2563eb', borderRadius: 6 }],
+    datasets: [{
+      label: 'Documents',
+      data: counts,
+      backgroundColor: ['#94a3b8', '#2563eb', '#f59e0b', '#16a34a', '#dc2626', '#7f1d1d'],
+      borderRadius: 6,
+    }],
   }
 })
 
