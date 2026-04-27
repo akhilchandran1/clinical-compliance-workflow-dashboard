@@ -1,26 +1,70 @@
 <template>
   <header class="sticky top-0 z-30 border-b border-slate-200 bg-white/95 backdrop-blur">
-    <div class="page-container flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8">
-      <div class="flex items-center gap-3">
-        <button class="focus-ring rounded-md border border-slate-300 p-2 text-slate-700 hover:bg-slate-100 lg:hidden" aria-label="Open navigation" @click="$emit('toggle-mobile-nav')">
-          ?
-        </button>
-        <RouterLink to="/dashboard" class="text-sm font-semibold tracking-tight text-slate-900">Clinical Compliance Workflow Dashboard</RouterLink>
+    <div class="page-container flex h-16 items-center gap-3 px-4 sm:px-6 lg:px-8">
+      <button
+        class="focus-ring inline-flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 lg:hidden"
+        aria-label="Open navigation"
+        @click="$emit('toggle-mobile-nav')"
+      >
+        <Menu class="h-4 w-4" />
+      </button>
+
+      <div class="hidden max-w-md flex-1 lg:block">
+        <label class="relative block">
+          <Search class="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+          <input
+            type="search"
+            aria-label="Search"
+            placeholder="Search (Ctrl + K)"
+            class="focus-ring w-full rounded-lg border border-slate-200 bg-slate-50 py-2 pl-9 pr-3 text-sm text-slate-700 placeholder:text-slate-400"
+          />
+        </label>
       </div>
-      <div class="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-medium text-slate-600">
-        <span class="h-2 w-2 rounded-full bg-blue-500" aria-hidden="true"></span>
-        <span>Role:</span>
-        <span class="font-semibold text-slate-900">{{ roleStore.selectedRole }}</span>
+
+      <div class="ml-auto flex items-center gap-2 sm:gap-3">
+        <button class="focus-ring relative inline-flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50" aria-label="Notifications">
+          <Bell class="h-4 w-4" />
+          <span v-if="notificationCount > 0" class="absolute -right-1 -top-1 inline-flex h-4 min-w-[16px] items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-semibold text-white">
+            {{ notificationCount > 9 ? '9+' : notificationCount }}
+          </span>
+        </button>
+
+        <div class="hidden items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs sm:flex">
+          <span class="text-slate-500">Role</span>
+          <span class="font-semibold text-slate-900">{{ roleStore.selectedRole }}</span>
+        </div>
+
+        <div class="inline-flex h-9 w-9 items-center justify-center rounded-full bg-blue-100 text-xs font-semibold text-blue-700" :aria-label="`Current user role ${roleStore.selectedRole}`">
+          {{ roleInitials }}
+        </div>
       </div>
     </div>
   </header>
 </template>
 
 <script setup>
-import { RouterLink } from 'vue-router'
+import { computed } from 'vue'
+import { Bell, Menu, Search } from 'lucide-vue-next'
 import { useRoleStore } from '../../stores/roleStore'
+import { useAlertStore } from '../../stores/alertStore'
+import { useStudyStore } from '../../stores/studyStore'
+import { useDocumentStore } from '../../stores/documentStore'
 
 defineEmits(['toggle-mobile-nav'])
 
 const roleStore = useRoleStore()
+const alertStore = useAlertStore()
+const studyStore = useStudyStore()
+const documentStore = useDocumentStore()
+
+const notificationCount = computed(() => alertStore.generateAlerts(studyStore.studies, documentStore.documents).length)
+
+const roleInitials = computed(() =>
+  String(roleStore.selectedRole || 'R')
+    .split(' ')
+    .map((part) => part.charAt(0))
+    .join('')
+    .slice(0, 2)
+    .toUpperCase(),
+)
 </script>

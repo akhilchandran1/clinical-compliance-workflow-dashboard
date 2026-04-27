@@ -1,19 +1,27 @@
-ï»¿<template>
+<template>
   <AppLayout>
-    <PageHeader title="Dashboard" subtitle="Clinical compliance overview and KPI monitoring" />
+    <PageHeader title="Dashboard" subtitle="Clinical compliance overview and KPI monitoring">
+      <template #actions>
+        <div class="hidden items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-600 md:flex">
+          <Calendar class="h-4 w-4 text-slate-500" />
+          <span>{{ todayLabel }}</span>
+        </div>
+      </template>
+    </PageHeader>
 
-    <section class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-      <SummaryCard label="Total Studies" :value="metrics.totalStudies" />
-      <SummaryCard label="Active Studies" :value="metrics.activeStudies" />
-      <SummaryCard label="Pending Reviews" :value="metrics.pendingReviews" />
-      <SummaryCard label="Approved Documents" :value="metrics.approvedDocuments" />
-      <SummaryCard label="Rejected Documents" :value="metrics.rejectedDocuments" />
-      <SummaryCard label="High Risk Alerts" :value="metrics.highRiskAlerts" />
-      <SummaryCard label="Documents Expiring Soon" :value="metrics.expiringSoon" />
+    <section class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+      <MetricCard label="Total Studies" :value="metrics.totalStudies" icon="studies" tone="primary" trend="0% from last month" />
+      <MetricCard label="Active Studies" :value="metrics.activeStudies" icon="active" tone="success" trend="Stable portfolio" />
+      <MetricCard label="Pending Reviews" :value="metrics.pendingReviews" icon="pending" tone="warning" trend="Awaiting QA actions" />
+      <MetricCard label="Approved Documents" :value="metrics.approvedDocuments" icon="approved" tone="success" trend="Ready for execution" />
+      <MetricCard label="Rejected Documents" :value="metrics.rejectedDocuments" icon="rejected" tone="danger" trend="Needs resubmission" />
+      <MetricCard label="High Risk Alerts" :value="metrics.highRiskAlerts" icon="alerts" tone="danger" trend="Requires attention" />
+      <MetricCard label="Documents Expiring Soon" :value="metrics.expiringSoon" icon="expiring" tone="warning" trend="Due within 7 days" />
+      <MetricCard label="Review In Progress" :value="metrics.reviewInProgress" icon="progress" tone="info" trend="Currently under review" />
     </section>
 
     <section class="mt-6 grid gap-4 xl:grid-cols-3">
-      <ChartCard class="xl:col-span-2" title="Documents by Status" type="bar" :data="documentsByStatusData" :options="barChartOptions" />
+      <ChartCard class="xl:col-span-2" title="Documents by Status" type="bar" :data="documentsByStatusData" :options="barChartOptions" filter-label="All Studies" :footer-text="`Total documents: ${metrics.totalDocuments}`" />
       <ComplianceSummary :metrics="metrics" />
     </section>
 
@@ -25,22 +33,22 @@
     <section class="mt-6 grid gap-4 xl:grid-cols-2">
       <AppCard>
         <div class="mb-4 flex items-center justify-between gap-2">
-          <h2 class="text-[22px] font-semibold text-slate-900">Recent Activity</h2>
-          <RouterLink to="/audit-trail" class="text-sm font-medium text-blue-700 hover:underline">View full audit trail</RouterLink>
+          <h2 class="text-lg font-semibold text-slate-900">Recent Activity</h2>
+          <RouterLink to="/audit-trail" class="text-sm font-medium text-blue-700 hover:underline">View all</RouterLink>
         </div>
         <EmptyState v-if="recentLogs.length === 0" title="No recent activity" description="Workflow actions will appear here as users submit and review documents." />
         <ul v-else class="space-y-3">
           <li v-for="log in recentLogs" :key="log.id" class="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3">
             <p class="text-sm font-semibold text-slate-900">{{ log.action }}</p>
-            <p class="mt-1 text-xs text-slate-600">{{ formatDateTime(log.timestamp) }} Â· {{ log.role }} Â· {{ log.entityId }}</p>
+            <p class="mt-1 text-xs text-slate-600">{{ formatDateTime(log.timestamp) }} · {{ log.role }} · {{ log.entityId }}</p>
           </li>
         </ul>
       </AppCard>
 
       <AppCard>
         <div class="mb-4 flex items-center justify-between gap-2">
-          <h2 class="text-[22px] font-semibold text-slate-900">High Risk Alerts</h2>
-          <RouterLink to="/compliance-alerts" class="text-sm font-medium text-blue-700 hover:underline">View all alerts</RouterLink>
+          <h2 class="text-lg font-semibold text-slate-900">High Risk Alerts</h2>
+          <RouterLink to="/compliance-alerts" class="text-sm font-medium text-blue-700 hover:underline">View all</RouterLink>
         </div>
         <EmptyState v-if="highRiskAlerts.length === 0" title="No high risk alerts" description="Critical compliance issues will appear here when triggered." />
         <ul v-else class="space-y-3">
@@ -61,12 +69,13 @@
 <script setup>
 import { computed } from 'vue'
 import { RouterLink } from 'vue-router'
+import { Calendar } from 'lucide-vue-next'
 import AppLayout from '../components/layout/AppLayout.vue'
 import AppCard from '../components/common/AppCard.vue'
 import EmptyState from '../components/common/EmptyState.vue'
 import StatusBadge from '../components/common/StatusBadge.vue'
 import PageHeader from '../components/common/PageHeader.vue'
-import SummaryCard from '../components/dashboard/SummaryCard.vue'
+import MetricCard from '../components/dashboard/MetricCard.vue'
 import ChartCard from '../components/dashboard/ChartCard.vue'
 import ComplianceSummary from '../components/dashboard/ComplianceSummary.vue'
 import { useStudyStore } from '../stores/studyStore'
@@ -84,6 +93,7 @@ const auditStore = useAuditStore()
 const alerts = computed(() => alertStore.generateAlerts(studyStore.studies, documentStore.documents))
 const highRiskAlerts = computed(() => alerts.value.filter((alert) => alert.severity === 'High').slice(0, 4))
 const recentLogs = computed(() => auditStore.sortedLogs.slice(0, 6))
+const todayLabel = computed(() => new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }))
 
 const canonicalStatusMap = new Map(documentStatuses.map((status) => [status.toLowerCase(), status]))
 
@@ -149,6 +159,8 @@ const metrics = computed(() => ({
   rejectedDocuments: documentStatusCounts.value.Rejected,
   highRiskAlerts: alerts.value.filter((alert) => alert.severity === 'High').length,
   expiringSoon: alerts.value.filter((alert) => alert.type === 'Expiring Document').length,
+  reviewInProgress: documentStatusCounts.value['Under Review'],
+  totalDocuments: documentStore.documents.length,
 }))
 
 const documentsByStatusData = computed(() => {
@@ -159,8 +171,9 @@ const documentsByStatusData = computed(() => {
     datasets: [{
       label: 'Documents',
       data: counts,
-      backgroundColor: ['#94a3b8', '#2563eb', '#f59e0b', '#16a34a', '#dc2626', '#7f1d1d'],
+      backgroundColor: ['#94a3b8', '#2563eb', '#f59e0b', '#16a34a', '#ef4444', '#475569'],
       borderRadius: 6,
+      maxBarThickness: 36,
     }],
   }
 })
@@ -170,7 +183,7 @@ const riskChartData = computed(() => {
   const counts = levels.map((level) => studyStore.studies.filter((study) => study.riskLevel === level).length)
   return {
     labels: levels,
-    datasets: [{ data: counts, backgroundColor: ['#16a34a', '#f59e0b', '#dc2626'] }],
+    datasets: [{ data: counts, backgroundColor: ['#16a34a', '#f59e0b', '#ef4444'] }],
   }
 })
 
@@ -191,7 +204,7 @@ const reviewActivityData = computed(() => {
 
   return {
     labels: Array.from(monthMap.keys()),
-    datasets: [{ label: 'Reviews Completed', data: Array.from(monthMap.values()), borderColor: '#0ea5e9', backgroundColor: 'rgba(14, 165, 233, 0.18)', fill: true, tension: 0.3 }],
+    datasets: [{ label: 'Reviews Completed', data: Array.from(monthMap.values()), borderColor: '#06b6d4', backgroundColor: 'rgba(6, 182, 212, 0.16)', fill: true, tension: 0.35 }],
   }
 })
 </script>
