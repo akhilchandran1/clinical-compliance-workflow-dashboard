@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <AppLayout>
     <PageHeader title="Documents" subtitle="Manage document lifecycle, submissions, and review outcomes">
       <template #actions>
@@ -7,6 +7,13 @@
     </PageHeader>
 
     <AppCard>
+      <div class="rounded-lg border border-blue-100 bg-blue-50 p-4">
+        <p class="text-xs font-semibold uppercase tracking-wide text-blue-700">Current Permissions</p>
+        <p class="mt-1 text-sm text-slate-700">{{ permissionSummary }}</p>
+      </div>
+    </AppCard>
+
+    <AppCard class="mt-4">
       <DocumentFilters
         :filters="filters"
         :status-options="documentStatuses"
@@ -69,6 +76,7 @@ import DocumentForm from '../components/documents/DocumentForm.vue'
 import DocumentReviewPanel from '../components/documents/DocumentReviewPanel.vue'
 import { documentStatuses } from '../constants/statuses'
 import { documentTypes } from '../constants/documentTypes'
+import { roles } from '../constants/roles'
 import { useRoleStore } from '../stores/roleStore'
 import { useStudyStore } from '../stores/studyStore'
 import { useDocumentStore } from '../stores/documentStore'
@@ -101,6 +109,15 @@ const filters = reactive({ search: '', status: '', type: '', studyId: '' })
 const canCreate = computed(() => canCreateDocument(roleStore.selectedRole))
 const isEditing = computed(() => Boolean(editingDocumentId.value))
 const studyOptions = computed(() => studyStore.studies.map((study) => ({ label: study.title, value: study.id })))
+const permissionSummary = computed(() => {
+  if (roleStore.selectedRole === roles.ADMIN) {
+    return 'Can create, edit, submit, review, approve, reject, and act across all document statuses.'
+  }
+  if (roleStore.selectedRole === roles.REVIEWER) {
+    return 'Can review, approve, and reject documents in Submitted or Under Review status.'
+  }
+  return 'Can create, edit, and submit documents in Draft or Rejected status.'
+})
 
 const filteredDocuments = computed(() => {
   const records = [...documentStore.documents]

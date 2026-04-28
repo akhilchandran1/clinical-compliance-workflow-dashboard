@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <AppLayout>
     <PageHeader title="Audit Trail" subtitle="Append-only log of workflow actions and status transitions">
       <template #actions>
@@ -10,6 +10,13 @@
     </PageHeader>
 
     <AppCard>
+      <div class="rounded-lg border border-blue-100 bg-blue-50 p-4">
+        <p class="text-xs font-semibold uppercase tracking-wide text-blue-700">Current Permissions</p>
+        <p class="mt-1 text-sm text-slate-700">{{ permissionSummary }}</p>
+      </div>
+    </AppCard>
+
+    <AppCard class="mt-4">
       <AuditFilters :filters="filters" :role-options="roleOptions" @update="onFilterUpdate" />
     </AppCard>
 
@@ -39,6 +46,7 @@ import EmptyState from '../components/common/EmptyState.vue'
 import ConfirmDialog from '../components/common/ConfirmDialog.vue'
 import AuditFilters from '../components/audit/AuditFilters.vue'
 import AuditLogTable from '../components/audit/AuditLogTable.vue'
+import { roles } from '../constants/roles'
 import { useAuditStore } from '../stores/auditStore'
 import { useRoleStore } from '../stores/roleStore'
 import { useStudyStore } from '../stores/studyStore'
@@ -58,6 +66,12 @@ const openReset = ref(false)
 const filters = reactive({ search: '', role: '', action: '', fromDate: '', toDate: '' })
 
 const roleOptions = ['Researcher', 'Reviewer', 'Admin']
+const permissionSummary = computed(() => {
+  if (roleStore.selectedRole === roles.ADMIN) {
+    return 'Can export audit logs and reset demo data. Reset creates a new system audit entry.'
+  }
+  return 'Can export and filter audit logs. Demo data reset is restricted to Admin role.'
+})
 
 const filteredLogs = computed(() => auditStore.sortedLogs.filter((log) => {
   const haystack = `${log.action} ${log.entityId} ${log.entityName} ${log.comment}`.toLowerCase()

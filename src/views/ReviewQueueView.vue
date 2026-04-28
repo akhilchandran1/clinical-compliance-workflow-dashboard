@@ -1,17 +1,27 @@
-﻿<template>
+<template>
   <AppLayout>
     <PageHeader title="Review Queue" subtitle="Documents requiring reviewer or QA action" />
-    <EmptyState v-if="queue.length === 0" title="Review queue is clear" description="No documents currently require reviewer action." />
-    <DocumentTable
-      v-else
-      :documents="queue"
-      :studies="studyStore.studies"
-      :role="roleStore.selectedRole"
-      @submit="noop"
-      @under-review="markUnderReview"
-      @approve="approve"
-      @open-reject="openReject"
-    />
+
+    <AppCard>
+      <div class="rounded-lg border border-blue-100 bg-blue-50 p-4">
+        <p class="text-xs font-semibold uppercase tracking-wide text-blue-700">Current Permissions</p>
+        <p class="mt-1 text-sm text-slate-700">{{ permissionSummary }}</p>
+      </div>
+    </AppCard>
+
+    <div class="mt-4">
+      <EmptyState v-if="queue.length === 0" title="Review queue is clear" description="No documents currently require reviewer action." />
+      <DocumentTable
+        v-else
+        :documents="queue"
+        :studies="studyStore.studies"
+        :role="roleStore.selectedRole"
+        @submit="noop"
+        @under-review="markUnderReview"
+        @approve="approve"
+        @open-reject="openReject"
+      />
+    </div>
 
     <DocumentReviewPanel
       :open="rejectOpen"
@@ -28,9 +38,11 @@
 import { computed, ref } from 'vue'
 import AppLayout from '../components/layout/AppLayout.vue'
 import PageHeader from '../components/common/PageHeader.vue'
+import AppCard from '../components/common/AppCard.vue'
 import EmptyState from '../components/common/EmptyState.vue'
 import DocumentTable from '../components/documents/DocumentTable.vue'
 import DocumentReviewPanel from '../components/documents/DocumentReviewPanel.vue'
+import { roles } from '../constants/roles'
 import { useDocumentStore } from '../stores/documentStore'
 import { useRoleStore } from '../stores/roleStore'
 import { useStudyStore } from '../stores/studyStore'
@@ -47,6 +59,15 @@ const rejectError = ref('')
 const targetId = ref('')
 
 const queue = computed(() => documentStore.reviewQueue)
+const permissionSummary = computed(() => {
+  if (roleStore.selectedRole === roles.ADMIN) {
+    return 'Can move documents to Under Review, approve, and reject all review-queue documents.'
+  }
+  if (roleStore.selectedRole === roles.REVIEWER) {
+    return 'Can move Submitted documents to Under Review, then approve or reject review-queue documents.'
+  }
+  return 'Read-only in this queue. Reviewer or Admin role is required to process review actions.'
+})
 
 const noop = () => {}
 
